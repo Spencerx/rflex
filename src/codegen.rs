@@ -295,7 +295,9 @@ impl<'a> CodeGen<'a> {
     ) -> String {
         self.emitter.emit();
 
-        let template = liquid::ParserBuilder::with_liquid().build().parse(
+        let parser = liquid::ParserBuilder::with_stdlib().build().unwrap();
+        let template = parser
+            .parse(
             r#"
 use std::collections::HashMap;
 use std::str::CharIndices;
@@ -539,7 +541,6 @@ impl<'a> {{lexer_name}}<'a> {
             return template.err().unwrap().to_string();
         }
         let template = template.unwrap();
-        let mut globals = liquid::value::Object::new();
 
         let mut fields_def = String::new();
         let mut fields_init = String::new();
@@ -559,22 +560,6 @@ impl<'a> {{lexer_name}}<'a> {
                 );
             }
         }
-        globals.insert(
-            "fields_def".into(),
-            liquid::value::Value::scalar(fields_def),
-        );
-        globals.insert(
-            "fields_init".into(),
-            liquid::value::Value::scalar(fields_init),
-        );
-        globals.insert(
-            "fields_args".into(),
-            liquid::value::Value::scalar(fields_args),
-        );
-        globals.insert(
-            "fields_accessor".into(),
-            liquid::value::Value::scalar(fields_accessor),
-        );
 
         let user_code = {
             let mut code = String::new();
@@ -586,7 +571,6 @@ impl<'a> {{lexer_name}}<'a> {
             }
             code
         };
-        globals.insert("user_code".into(), liquid::value::Value::scalar(user_code));
 
         let row: Vec<i32> = self.emitter.get_row_map();
         let table: Vec<i32> = self.emitter.get_translation_table();
@@ -594,66 +578,17 @@ impl<'a> {{lexer_name}}<'a> {
         let action: Vec<i32> = self.emitter.get_action();
         let lexstate: Vec<i32> = self.emitter.get_lexstate();
 
-        globals.insert(
-            "row_num".into(),
-            liquid::value::Value::scalar(row.len() as i32),
-        );
-        globals.insert(
-            "row_value".into(),
-            liquid::value::Value::scalar(format!("{:?}", row)),
-        );
-        globals.insert(
-            "trans_num".into(),
-            liquid::value::Value::scalar(table.len() as i32),
-        );
-        globals.insert(
-            "trans_value".into(),
-            liquid::value::Value::scalar(format!("{:?}", table)),
-        );
-        globals.insert(
-            "attr_num".into(),
-            liquid::value::Value::scalar(attr.len() as i32),
-        );
-        globals.insert(
-            "attr_value".into(),
-            liquid::value::Value::scalar(format!("{:?}", attr)),
-        );
-        globals.insert(
-            "action_num".into(),
-            liquid::value::Value::scalar(action.len() as i32),
-        );
-        globals.insert(
-            "action_value".into(),
-            liquid::value::Value::scalar(format!("{:?}", action)),
-        );
-        globals.insert(
-            "lexstate_num".into(),
-            liquid::value::Value::scalar(lexstate.len() as i32),
-        );
-        globals.insert(
-            "lexstate_value".into(),
-            liquid::value::Value::scalar(format!("{:?}", lexstate)),
-        );
-
         let klass = "%class".to_string();
         let lexer_name = match keys.get(&klass) {
             Some(s) => s.clone(),
             None => "Lexer".to_string(),
         };
-        globals.insert(
-            "lexer_name".into(),
-            liquid::value::Value::scalar(lexer_name.clone()),
-        );
 
         let result = "%result_type".to_string();
         let result_type = match keys.get(&result) {
             Some(s) => s.clone(),
             None => "i32".to_string(),
         };
-        globals.insert(
-            "result_type".into(),
-            liquid::value::Value::scalar(result_type),
-        );
 
         let previous_def = "    previous: char,";
         let previous_init = "            previous: 0 as char,";
@@ -681,26 +616,7 @@ impl<'a> {{lexer_name}}<'a> {
                     _ => self.zz_at_bol = false,
                 }
             }"#;
-        globals.insert(
-            "previous_def".into(),
-            liquid::value::Value::scalar(if self.bol_used { previous_def } else { "" }),
-        );
-        globals.insert(
-            "previous_init".into(),
-            liquid::value::Value::scalar(if self.bol_used { previous_init } else { "" }),
-        );
-        globals.insert(
-            "zz_bol_def".into(),
-            liquid::value::Value::scalar(if self.bol_used { zz_bol_def } else { "" }),
-        );
-        globals.insert(
-            "zz_bol_init".into(),
-            liquid::value::Value::scalar(if self.bol_used { zz_bol_init } else { "" }),
-        );
-        globals.insert(
-            "zz_bol_flag".into(),
-            liquid::value::Value::scalar(if self.bol_used { zz_bol_flag } else { "" }),
-        );
+
         let copy_previous = "self.previous = zz_input;";
         let next_input = if self.bol_used {
             r#"
@@ -716,14 +632,6 @@ impl<'a> {{lexer_name}}<'a> {
                     zz_input = next.1 as i32;
                 }"#
         };
-        globals.insert(
-            "next_input".into(),
-            liquid::value::Value::scalar(next_input),
-        );
-        globals.insert(
-            "copy_previous".into(),
-            liquid::value::Value::scalar(if self.bol_used { copy_previous } else { "" }),
-        );
         let zz_state_update = if self.bol_used {
             format!("            self.zz_state = {}::ZZ_LEXSTATE[self.zz_lexical_state + (self.zz_at_bol as usize)] as usize;", lexer_name)
         } else {
@@ -732,10 +640,6 @@ impl<'a> {{lexer_name}}<'a> {
                 lexer_name
             )
         };
-        globals.insert(
-            "zz_state_update".into(),
-            liquid::value::Value::scalar(zz_state_update),
-        );
 
         let mut const_values = String::new();
         let mut lex_num = 0usize;
@@ -772,10 +676,6 @@ impl<'a> {{lexer_name}}<'a> {
             e_actions.push_str(format!("                     _ => {{ {} }}\n", default).as_ref());
             e_actions.push_str("                 }\n");
         }
-        globals.insert(
-            "eof_actions".into(),
-            liquid::value::Value::scalar(e_actions),
-        );
 
         let col_map: Vec<i32> = self.emitter.get_col_map();
         let mut cmap_values = String::new();
@@ -813,23 +713,38 @@ impl<'a> {{lexer_name}}<'a> {
             i += 1;
         }
 
-        globals.insert(
-            "const_values".into(),
-            liquid::value::Value::scalar(const_values),
-        );
-        globals.insert(
-            "cmap_values".into(),
-            liquid::value::Value::scalar(cmap_values),
-        );
-        globals.insert(
-            "action_list".into(),
-            liquid::value::Value::scalar(action_list),
-        );
-        globals.insert(
-            "use_cmap2".into(),
-            liquid::value::Value::scalar(use_cmap2),
-        );
-        let output = template.render(&globals).unwrap();
-        output
+        let globals = liquid::object!({
+            "fields_def": fields_def,
+            "fields_init": fields_init,
+            "fields_args": fields_args,
+            "fields_accessor": fields_accessor,
+            "user_code": user_code,
+            "row_num": row.len() as i32,
+            "row_value": format!("{:?}", row),
+            "trans_num": table.len() as i32,
+            "trans_value": format!("{:?}", table),
+            "attr_num": attr.len() as i32,
+            "attr_value": format!("{:?}", attr),
+            "action_num": action.len() as i32,
+            "action_value": format!("{:?}", action),
+            "lexstate_num": lexstate.len() as i32,
+            "lexstate_value": format!("{:?}", lexstate),
+            "lexer_name": lexer_name.clone(),
+            "result_type": result_type,
+            "previous_def": if self.bol_used { previous_def } else { "" },
+            "previous_init": if self.bol_used { previous_init } else { "" },
+            "zz_bol_def": if self.bol_used { zz_bol_def } else { "" },
+            "zz_bol_init": if self.bol_used { zz_bol_init } else { "" },
+            "zz_bol_flag": if self.bol_used { zz_bol_flag } else { "" },
+            "next_input": next_input,
+            "copy_previous": if self.bol_used { copy_previous } else { "" },
+            "zz_state_update": zz_state_update,
+            "eof_actions": e_actions,
+            "const_values": const_values,
+            "cmap_values": cmap_values,
+            "action_list": action_list,
+            "use_cmap2": use_cmap2,
+        });
+        template.render(&globals).unwrap()
     }
 }
