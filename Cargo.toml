@@ -12,5 +12,5 @@ keywords = ["lexer", "lex"]
 
 [dependencies]
 fixedbitset = "0.4.2"
-liquid = "0.26"
+liquid = "0.26.4"
 failure = "0.1.5"
