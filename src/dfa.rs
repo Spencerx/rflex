@@ -477,6 +477,7 @@ impl DFA {
         }
     }
 
+    #[allow(dead_code)]
     pub fn write_dot(&self) -> String {
         let mut res = String::new();
         res.push_str("digraph DFA {\n");
@@ -500,6 +501,7 @@ impl DFA {
         res
     }
 
+    #[allow(dead_code)]
     pub fn dump(&self) -> String {
         let mut res = String::new();
         for i in 0..self.num_states {

@@ -524,7 +524,7 @@ impl NFA {
         closure
     }
 
-    #[warn(dead_code)]
+    #[allow(dead_code)]
     fn dump_epsilon(&self, epsilon: Vec<Option<Rc<RefCell<FixedBitSet>>>>) {
         print!("dump_epsilon - ");
         for v in epsilon {
@@ -538,11 +538,12 @@ impl NFA {
         print!("\n");
     }
 
-    #[warn(dead_code)]
+    #[allow(dead_code)]
     fn dump_fixedbit(&self, v: &FixedBitSet) {
         print!("{}", self.dump_fixedbit_str(v));
     }
 
+    #[allow(dead_code)]
     fn dump_fixedbit_str(&self, v: &FixedBitSet) -> String {
         let mut res = String::new();
         let mut there_prev = false;
@@ -591,6 +592,7 @@ impl NFA {
         res
     }
 
+    #[allow(dead_code)]
     pub fn dump_table(&self) -> String {
         let mut res = String::new();
         for i in 0..self.num_states {

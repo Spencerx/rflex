@@ -581,6 +581,7 @@ fn convert_char_class(char_class: String) -> Result<Vec<Interval>, CharClassPars
     Ok(char_set.get_intervals())
 }
 
+#[allow(dead_code)]
 fn parse_regex(line_num: usize, line: &String) -> Result<(IR, String), TranslateError> {
     let mut cc = CharClasses::new(127);
     let mut parser = RegexScanner::new(line_num, line, &mut cc);
