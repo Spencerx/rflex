@@ -552,8 +552,10 @@ impl<'a> {{lexer_name}}<'a> {
                 fields_args.push_str(format!(", {}: {}", init, def_type).as_ref());
                 fields_init.push_str(format!("\n            {},", init).as_ref());
                 fields_accessor.push_str(
-                    format!(
-                        "        pub fn get_{}(&mut self) -> &mut {} {{ &mut self.{} }}\n",
+                    format!(r#"
+    #[allow(dead_code)]
+    pub fn get_{}(&mut self) -> &mut {} {{ &mut self.{} }}
+"#,
                         init, def_type, init
                     )
                     .as_ref(),
