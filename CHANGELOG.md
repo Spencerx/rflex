@@ -1,3 +1,8 @@
+## (2024-00-00)
+
+* Update liquid-rust version
+* Suppress warnings
+
 ## 0.8.1 (2024-01-26)
 
 * Suppress warnings
