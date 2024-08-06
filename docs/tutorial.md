@@ -71,7 +71,7 @@ When reached end of file, `yylex` returns `Err(Error::EOF)`.
 It returns `Err(Error::Unmatch)` if the input wasn't accepted.
 
 ```rust
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Error {
     EOF,
     Unmatch,
