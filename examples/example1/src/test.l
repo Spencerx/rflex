@@ -25,7 +25,7 @@ impl SpaceCounter {
 " "                    { self.space_counter.increment_space(); }
 "abc"                  println!("'{}'", self.yytext()); return Ok(1i32);
 [a-zA-Z][a-zA-Z_]*     println!("'{}'", self.yytext()); return Ok(2i32);
-"\""[^\r\n"]*"\""      println!("String {}", self.yytext()); return Ok(3i32);
+\"[^\r\n"]*\"          println!("String {}", self.yytext()); return Ok(3i32);
 <<EOF>>                println!("normal EOF");
 %%
 
