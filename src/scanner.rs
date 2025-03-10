@@ -566,8 +566,16 @@ fn convert_char_class(char_class: String) -> Result<Vec<Interval>, CharClassPars
                     {
                         char_set.add_set(&IntCharSet::with_char(ch as usize));
                     }
+                    Some('t') => {
+                        char_set.add_set(&IntCharSet::with_char('\t' as usize));
+                    }
                     Some('r') => {
                         char_set.add_set(&IntCharSet::with_char('\r' as usize));
+                    }
+                    Some('n') => {
+                        for c in "\n\u{000B}\u{000C}\u{0085}\u{2028}\u{2029}".chars() {
+                            char_set.add_set(&IntCharSet::with_char(c as usize));
+                        }
                     }
                     _ => return Err(CharClassParseError::CharClassError),
                 }
@@ -1864,6 +1872,14 @@ rankdir = LR
 
         let action: Vec<i32> = vec![0, 0, 1, 2];
         assert_eq!(action, emitter.get_action());
+    }
+
+    #[test]
+    fn nfa_build_notcharset2() {
+        let mut char_classes = CharClasses::new(1114111);
+        let (_ir1, _block1, err) =
+            parse_regex2(0, &"[a-z\\n]  {block}".to_string(), &mut char_classes).unwrap();
+        assert!(err.is_empty());
     }
 
     #[test]

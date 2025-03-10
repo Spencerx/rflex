@@ -1,7 +1,8 @@
-## (2024-00-00)
+## (2025-00-00)
 
 * Update liquid-rust version
 * Suppress warnings
+* Support '\n', '\t' in bracket `[]` expression
 
 ## 0.8.1 (2024-01-26)
 
