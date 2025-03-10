@@ -2,7 +2,8 @@
 
 * Update liquid-rust version
 * Suppress warnings
-* Support '\n', '\t' in bracket `[]` expression
+* Support `\n`, `\t` in bracket expression
+* Support `\"` for letter
 
 ## 0.8.1 (2024-01-26)
 

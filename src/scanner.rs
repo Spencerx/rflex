@@ -497,6 +497,7 @@ impl<'a, 'b> RegexScanner<'a, 'b> {
                     }
                     Some(ch)
                         if ch == '\\'
+                            || ch == '\"'
                             || ch == '*'
                             || ch == '+'
                             || ch == '.'
