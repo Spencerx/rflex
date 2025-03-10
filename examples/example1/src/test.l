@@ -22,9 +22,10 @@ impl SpaceCounter {
 %result_type i32
 %field SpaceCounter space_counter
 
+" "                    { self.space_counter.increment_space(); }
 "abc"                  println!("'{}'", self.yytext()); return Ok(1i32);
 [a-zA-Z][a-zA-Z_]*     println!("'{}'", self.yytext()); return Ok(2i32);
-" "                    { self.space_counter.increment_space(); }
+"\""[^\r\n"]*"\""      println!("String {}", self.yytext()); return Ok(3i32);
 <<EOF>>                println!("normal EOF");
 %%
 
