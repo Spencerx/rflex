@@ -1,4 +1,4 @@
-## (2025-00-00)
+## 0.9.0 (2025-03-11)
 
 * Update liquid-rust version
 * Suppress warnings
